@@ -1,124 +1,47 @@
 import './App.css';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 
+export default function Datepicker() {
+  const today = new Date();
+  const monthlist = ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const todaystring = today.toLocaleDateString();
+  const [mydate, setMydate] = useState(JSON.parse(localStorage.getItem('mydate')) || { 'month': today.getMonth() + 1, 'day': today.getDate(), 'year': today.getFullYear() });
 
-export default class Datepicker extends Component {
+  let daysInMonth = new Date(mydate.year, mydate.month, 0).getDate();
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      today: new Date().toLocaleDateString(),
-      month: '',
-      day: '',
-      year: '',
-      numericalmonth: '',
-    }
-  }
-  componentDidMount() {
+  let daysinmontharray = Array.apply(null, { length: daysInMonth + 1 }).map(Number.call, Number);
+  daysinmontharray.shift();
 
-    if (localStorage === null) {
-      this.getCurrentDate();
-    } else {
+  let Calculate = Math.round((new Date(mydate.month + '/' + mydate.day + '/' + mydate.year) - new Date(todaystring)) / (1000 * 3600 * 24))
 
-      this.getLocalStorage();
-    }
-  }
-
-  getCurrentDate = () => {
-    const date = new Date();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const numericalmonth = date.getMonth() + 1;
-    const year = date.getFullYear();
-    const day = date.getDate();
-    const today = new Date().toLocaleDateString();
-    this.setState({ month: month, year: year, day: day, today: today, numericalmonth: numericalmonth });
-  };
-
-  getLocalStorage = () => {
-    this.setState({
-      month: localStorage.getItem("month"),
-      day: localStorage.getItem("day"),
-      year: localStorage.getItem("year"),
-      numericalmonth: localStorage.getItem("numericalmonth"),
-    })
-  }
-
-  daysInMonth = (month, year) => {
-    return new Date(year, month, 0).getDate();
-  };
-
-  calculateDays = () => {
-    let date1 = new Date(this.state.today);
-    let date2 = new Date(this.state.numericalmonth + '/' + this.state.day + '/' + this.state.year);
-    let Difference_In_Time = date2.getTime() - date1.getTime();
-    let Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
-    return Math.round(Difference_In_Days)
-  }
-
-  componentDidUpdate() {
-    this.calculateDays();
-
-    localStorage.setItem('year', this.state.year);
-    localStorage.setItem('month', this.state.month);
-    localStorage.setItem('numericalmonth', this.state.numericalmonth);
-    localStorage.setItem('day', this.state.day);
-    localStorage.setItem('today', this.state.today);
-
-
-    let daysinmonth = this.daysInMonth(this.state.numericalmonth, this.state.year);
-
-    let selectBox = document.querySelector('#dayofmonth');
-
-    selectBox.textContent = '';
-
-    for (var i = 0; i < daysinmonth; i++) {
-
-      const newOption = document.createElement('option');
-      const optionText = document.createTextNode([i + 1]);
-
-      newOption.appendChild(optionText);
-
-      newOption.setAttribute('value', [i + 1]);
-
-      selectBox.appendChild(newOption);
-    }
-  };
-
-  render() {
-
-    const {
-      year, month, day, numericalmonth,
-    } = this.state
-
-    return (
-      <div>
-
+  return (
+    <div>
+      <div className="wrapper">
         <div className="datewrapper">
 
-          <select value={month + ',' + numericalmonth} onChange={(e) => { this.setState({ month: e.target.value.split(',')[0], numericalmonth: e.target.value.split(',')[1] }) }} >
+          <div><label for="month">Month:</label>
+            <select className="p" id="month" value={mydate.month} onChange={(e) => { localStorage.setItem('mydate', JSON.stringify({ ...mydate, 'month': e.target.value })); setMydate({ ...mydate, 'month': e.target.value }) }} >
+              {monthlist.map((item, i) =>
+                <option key={i} value={i + 1}>{item}</option>
+              )}
+            </select></div>
 
-            <option value="January,1">January</option>
-            <option value="February,2">February</option>
-            <option value="March,3">March</option>
-            <option value="April,4">April</option>
-            <option value="May,5">May</option>
-            <option value="June,6">June</option>
-            <option value="July,7">July</option>
-            <option value="August,8">August</option>
-            <option value="September,9">September</option>
-            <option value="October,10">October</option>
-            <option value="November,11">November</option>
-            <option value="December,12">December</option>
-          </select>
+          <div><label for="day">Day:</label>
+            <select className="p" id="day" value={mydate.day} onChange={(e) => { localStorage.setItem('mydate', JSON.stringify({ ...mydate, 'day': e.target.value })); setMydate({ ...mydate, 'day': e.target.value }) }}>
+              {
+                daysinmontharray.map((item, i) =>
+                  <option key={i} value={item}>{item}</option>
+                )
+              }
+            </select></div>
 
-          <select id="dayofmonth" onChange={(e) => { this.setState({ day: e.target.value }) }}></select>
+          <div><label for="year">Year:</label>
+            <input className="p" id="year" type="number" min="0" defaultValue={mydate.year} onInput={(e) => { localStorage.setItem('mydate', JSON.stringify({ ...mydate, 'year': Math.abs(e.target.value) })); setMydate({ ...mydate, 'year': Math.abs(e.target.value) }) }}></input>
+          </div></div>
 
-          <input type="number" defaultValue={year} onInput={(e) => { if (e.target.value.length == 4) { this.setState({ year: e.target.value }) } }} ></input>
-
-          <div className="output">{numericalmonth}/{day}/{year} is {this.calculateDays()} days from now </div>
-        </div>
-
+        <div className="output">
+          {mydate.month + '/' + mydate.day + '/' + mydate.year} {(Math.sign(Calculate) === 1 || Calculate === 0) ? <span>is</span> : <span>was</span>} {Math.abs(Calculate)} {(Calculate === 1 || Calculate === -1) ? <span>day</span> : <span>days</span>} {(Math.sign(Calculate) === 1 || Calculate === 0) ? <span>from today</span> : <span>ago</span>}</div>
       </div>
-    )
-  }
-};
+    </div >
+  )
+}
