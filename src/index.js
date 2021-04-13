@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Datepicker from './App';
+import Datepicker from './Datepicker';
 
 
 ReactDOM.render(
